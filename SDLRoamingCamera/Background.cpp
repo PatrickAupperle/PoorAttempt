@@ -148,22 +148,29 @@ void Background::updateFade()
 	SDL_SetTextureColorMod(bg, fade, fade, fade);
 }
 
+int framesBetweenMoves = 0;
+
 void Background::updatePos()
 {
-	int dx = 0, dy = 0;
-	if (down)
-		dy = speed;
-	if (up)
-		dy = -speed;
-	if (left)
-		dx = -speed;
-	if (right)
-		dx = speed;
-	pos.x += dx;
-	pos.y += dy;
+	framesBetweenMoves++;
+	if (framesBetweenMoves == 5)
+	{
+		framesBetweenMoves = 0;
+		int dx = 0, dy = 0;
+		if (down)
+			dy = speed;
+		if (up)
+			dy = -speed;
+		if (left)
+			dx = -speed;
+		if (right)
+			dx = speed;
+		pos.x += dx;
+		pos.y += dy;
 
-	if (iw <= (pos.x + pos.w) || ih <= (pos.y + pos.h) || pos.x < 0 || pos.y < 0)
-		resetDir();
+		if (iw <= (pos.x + pos.w) || ih <= (pos.y + pos.h) || pos.x < 0 || pos.y < 0)
+			resetDir();
+	}
 
 }
 

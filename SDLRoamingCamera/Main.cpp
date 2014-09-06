@@ -79,25 +79,7 @@ int main(int argc, char** argv)
 					else if (e.button.button == SDL_BUTTON_RIGHT)
 						music.playPause();
 				}
-				else if (e.type == SDL_MOUSEBUTTONUP)
-				{
-					if (e.button.button == SDL_BUTTON_LEFT)
-						SDL_SetWindowGrab(win, SDL_FALSE);
-				}
-				else if (e.type == SDL_MOUSEMOTION)
-				{
-					if ((GetKeyState(VK_LBUTTON) & 0x80) != 0)
-					{
-						int wx, wy;
-						POINT currPos;
-						GetCursorPos(&currPos);
-						SDL_GetWindowPosition(win, &wx, &wy);
-						SDL_SetWindowPosition(win, currPos.x - std::get<0>(downPos), currPos.y - std::get<1>(downPos));
-						cout << "downPos: " << std::get<0>(downPos) << " " << std::get<1>(downPos) << endl;
-						cout << "currPos: " << currPos.x << " " << currPos.y << endl;
-					}
-
-				}
+				
 			}
 			/*
 			if ((GetKeyState(VK_LBUTTON) & 0x80) != 0)
@@ -111,6 +93,16 @@ int main(int argc, char** argv)
 			cout << "currPos: " << currPos.x << " " << currPos.y << endl;
 			}
 			*/
+			if ((GetKeyState(VK_LBUTTON) & 0x80) != 0)
+			{
+				int wx, wy;
+				POINT currPos;
+				GetCursorPos(&currPos);
+				SDL_GetWindowPosition(win, &wx, &wy);
+				SDL_SetWindowPosition(win, currPos.x - std::get<0>(downPos), currPos.y - std::get<1>(downPos));
+				cout << "downPos: " << std::get<0>(downPos) << " " << std::get<1>(downPos) << endl;
+				cout << "currPos: " << currPos.x << " " << currPos.y << endl;
+			}
 			bg.update();
 			SDL_RenderClear(ren);
 			bg.draw();
