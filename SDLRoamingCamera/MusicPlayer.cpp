@@ -24,18 +24,20 @@ void MusicPlayer::playPause()
 {
 	if (playing)
 	{
-		if (!BASS_ChannelPause(str))
-			cout << "Couldn't Pause" << endl;
-		else
+		if (BASS_ChannelPause(str))
 			playing = false;
+		else
+			cout << "Couldn't Pause" << endl;
+
 		cout << "pause" << endl;
 	}
 	else
 	{
-		if (!BASS_ChannelPlay(str, FALSE))
-			cout << "Couldn't Play " << playErrorString() << endl;
-		else
+		if (BASS_ChannelPlay(str, FALSE))
 			playing = true;
+		else
+			cout << "Couldn't Play " << playErrorString() << endl;
+			
 		cout << "play" << endl;
 	}
 }

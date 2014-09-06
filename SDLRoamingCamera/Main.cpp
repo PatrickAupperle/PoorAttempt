@@ -42,6 +42,12 @@ int main(int argc, char** argv)
 		std::tuple<int, int> downPos;
 		bool quit = false;
 		bool moving = false;
+		SDL_Rect r;
+		r.x = 10;
+		r.y = 10;
+		r.w = 100;
+		r.h = 100;
+
 		while (!quit)
 		{
 			SDL_Event e;
@@ -106,6 +112,9 @@ int main(int argc, char** argv)
 			bg.update();
 			SDL_RenderClear(ren);
 			bg.draw();
+			SDL_SetRenderDrawColor(ren, 0, 0, 0, 55);
+			SDL_SetRenderDrawBlendMode(ren, SDL_BLENDMODE_BLEND);
+			SDL_RenderFillRect(ren, &r);
 			SDL_RenderPresent(ren);
 		}
 
