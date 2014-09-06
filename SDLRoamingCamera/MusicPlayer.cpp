@@ -3,19 +3,23 @@
 #include <stdexcept>
 #include <iostream>
 using std::cout;
+using std::wcout;
 using std::endl;
 
 MusicPlayer::MusicPlayer(HWND win)
 {
 	if (!BASS_Init(-1, 44100, 0, win, NULL))
 		throw new std::runtime_error("Can't initialize device");
+	if (!BASS_PluginLoad("bassflac.dll", 0))
+		cout << "Plugin load failed" << endl;
 	playing = false;
 	cout << "init" << endl;
 }
 
-void MusicPlayer::loadFile(std::string file)
+void MusicPlayer::loadFile(std::wstring file)
 {
-	if (!(str = BASS_StreamCreateFile(FALSE, file.c_str(), 0, 0, 0))) 
+	wcout << file.c_str() << endl;
+	if (!(str = BASS_StreamCreateFile(FALSE, file.c_str(), 0, 0, BASS_UNICODE)))
 		throw new std::runtime_error("Can't Open File");
 	cout << "load" << endl;
 }

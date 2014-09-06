@@ -7,8 +7,11 @@ using namespace std;
 #include "MusicPlayer.h"
 #include <SDL_syswm.h>
 
+#define _UNICODE
+
 int main(int argc, char** argv)
 {
+
 	SDL_Init(SDL_INIT_EVERYTHING);
 	SDL_Window* win = SDL_CreateWindow("Roaming Camera", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 1280, 720, SDL_WINDOW_BORDERLESS);
 	if (!win)
@@ -34,9 +37,10 @@ int main(int argc, char** argv)
 			return 3;
 		}
 		SDL_SysWMinfo info;
+		SDL_VERSION(&info.version);
 		SDL_GetWindowWMInfo(win, &info);
 		MusicPlayer music(info.info.win.window);
-		music.loadFile(R"(music.mp3)");
+		music.loadFile(LR"(トランスルーセント.flac)");
 		music.playPause();
 
 		std::tuple<int, int> downPos;

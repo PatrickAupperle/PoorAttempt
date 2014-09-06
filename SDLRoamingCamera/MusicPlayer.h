@@ -11,7 +11,7 @@ public:
 	MusicPlayer(HWND win);
 	~MusicPlayer();
 	void playPause();
-	void loadFile(std::string file);
+	void loadFile(std::wstring file);
 
 private:
 	HSTREAM str;
