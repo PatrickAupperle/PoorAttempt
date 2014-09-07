@@ -12,7 +12,6 @@ MusicPlayer::MusicPlayer(HWND win)
 		throw new std::runtime_error("Can't initialize device");
 	if (!BASS_PluginLoad("bassflac.dll", 0))
 		cout << "Plugin load failed" << endl;
-	playing = false;
 	cout << "init" << endl;
 }
 
@@ -26,28 +25,19 @@ void MusicPlayer::loadFile(std::wstring file)
 	if (!(str = BASS_StreamCreateFile(FALSE, file.c_str(), 0, 0, BASS_UNICODE)))
 		throw new std::runtime_error("Can't Open File");
 	BASS_ChannelPlay(str, FALSE);
-	playing = true;
 	cout << "load" << endl;
 }
 
 void MusicPlayer::playPause()
 {
-	if (playing)
+	if (BASS_ChannelIsActive(str) == BASS_ACTIVE_PLAYING)
 	{
-		if (BASS_ChannelPause(str))
-			playing = false;
-		else
-			cout << "Couldn't Pause" << endl;
-
+		BASS_ChannelPause(str);
 		cout << "pause" << endl;
 	}
 	else
 	{
-		if (BASS_ChannelPlay(str, FALSE))
-			playing = true;
-		else
-			cout << "Couldn't Play " << playErrorString() << endl;
-			
+		BASS_ChannelPlay(str, FALSE);
 		cout << "play" << endl;
 	}
 }

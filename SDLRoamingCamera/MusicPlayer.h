@@ -15,7 +15,6 @@ public:
 
 private:
 	HSTREAM str;
-	bool playing;
 
 	std::string playErrorString();
 };
