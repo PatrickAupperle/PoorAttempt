@@ -7,6 +7,10 @@ using namespace std;
 #include "MusicPlayer.h"
 #include <SDL_syswm.h>
 
+#include <locale>
+#include <codecvt>
+#include <string>
+
 #define _UNICODE
 
 int main(int argc, char** argv)
@@ -71,7 +75,19 @@ int main(int argc, char** argv)
 				else if (e.type == SDL_DROPFILE)
 				{
 					std::string imagePath = e.drop.file;
+
 					bg.setImage(imagePath);
+
+					// This string contains the correct unicode path
+					std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
+					std::wstring path = converter.from_bytes(e.drop.file);
+
+					// In the future, we will need to check for file type (image vs music).
+					// We should be able to obtain the supported file types to check from both SDL and bass.
+					// Also consider logic for drag & drop of multiple files in the future; for example:
+					//
+					// If the standard behavior is to automatically play a new dropped song, then we should only
+					// play the last song dropped if the drag and drop operation involved multiple files at once.
 				}
 				else if (e.type == SDL_MOUSEBUTTONDOWN)
 				{
