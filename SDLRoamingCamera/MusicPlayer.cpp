@@ -18,9 +18,15 @@ MusicPlayer::MusicPlayer(HWND win)
 
 void MusicPlayer::loadFile(std::wstring file)
 {
+	if (str)
+	{
+		BASS_StreamFree(str);
+	}
 	wcout << file.c_str() << endl;
 	if (!(str = BASS_StreamCreateFile(FALSE, file.c_str(), 0, 0, BASS_UNICODE)))
 		throw new std::runtime_error("Can't Open File");
+	BASS_ChannelPlay(str, FALSE);
+	playing = true;
 	cout << "load" << endl;
 }
 

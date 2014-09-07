@@ -11,7 +11,19 @@ using namespace std;
 #include <codecvt>
 #include <string>
 
-#define _UNICODE
+bool dragging = false;
+
+string getExtension(string in)
+{
+	auto end = in.rbegin();
+	string out;
+	while (*end != '.')
+	{
+		out.insert(0, 1, *end);
+		++end;
+	}
+	return out;
+}
 
 int main(int argc, char** argv)
 {
@@ -45,7 +57,6 @@ int main(int argc, char** argv)
 		SDL_GetWindowWMInfo(win, &info);
 		MusicPlayer music(info.info.win.window);
 		music.loadFile(LR"(トランスルーセント.flac)");
-		music.playPause();
 
 		std::tuple<int, int> downPos;
 		bool quit = false;
@@ -74,14 +85,22 @@ int main(int argc, char** argv)
 				}
 				else if (e.type == SDL_DROPFILE)
 				{
-					std::string imagePath = e.drop.file;
-
-					bg.setImage(imagePath);
-
 					// This string contains the correct unicode path
 					std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
 					std::wstring path = converter.from_bytes(e.drop.file);
 
+					string extension = getExtension(e.drop.file);
+					cout << extension << endl;
+
+					if (extension == "flac" || extension == "mp3")
+					{
+						music.loadFile(path);
+					} 
+					else
+					{ 
+						cout << "image" << endl;
+						bg.setImage(e.drop.file);
+					}
 					// In the future, we will need to check for file type (image vs music).
 					// We should be able to obtain the supported file types to check from both SDL and bass.
 					// Also consider logic for drag & drop of multiple files in the future; for example:
@@ -96,6 +115,7 @@ int main(int argc, char** argv)
 					{
 						cout << "Mouse Button Down " << e.button.y << endl;
 						downPos = std::make_tuple(e.button.x, e.button.y);
+						dragging = true;
 						/*GetCursorPos(&down);
 						int wx, wy;
 						SDL_GetWindowPosition(win, &wx, &wy);
@@ -119,16 +139,16 @@ int main(int argc, char** argv)
 			cout << "currPos: " << currPos.x << " " << currPos.y << endl;
 			}
 			*/
-			if ((GetKeyState(VK_LBUTTON) & 0x80) != 0)
+			if ((GetKeyState(VK_LBUTTON) & 0x80) != 0 && dragging)
 			{
 				int wx, wy;
 				POINT currPos;
 				GetCursorPos(&currPos);
 				SDL_GetWindowPosition(win, &wx, &wy);
 				SDL_SetWindowPosition(win, currPos.x - std::get<0>(downPos), currPos.y - std::get<1>(downPos));
-				cout << "downPos: " << std::get<0>(downPos) << " " << std::get<1>(downPos) << endl;
-				cout << "currPos: " << currPos.x << " " << currPos.y << endl;
 			}
+			if ((GetKeyState(VK_LBUTTON) & 0x80) == 0)
+				dragging = false;
 			bg.update();
 			SDL_RenderClear(ren);
 			bg.draw();
