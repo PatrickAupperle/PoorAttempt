@@ -153,7 +153,7 @@ int framesBetweenMoves = 0;
 void Background::updatePos()
 {
 	framesBetweenMoves++;
-	if (framesBetweenMoves == 5)
+	if (framesBetweenMoves == 1)
 	{
 		framesBetweenMoves = 0;
 		int dx = 0, dy = 0;

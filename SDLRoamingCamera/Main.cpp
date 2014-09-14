@@ -5,11 +5,18 @@
 using namespace std;
 #include "Background.h"
 #include "MusicPlayer.h"
+#include "SpectrogramBG.h"
 #include <SDL_syswm.h>
+#include <SDL_ttf.h>
 
 #include <locale>
 #include <codecvt>
 #include <string>
+
+#include <io.h>
+#include <fcntl.h>
+#include <vector>
+#include "Song.h"
 
 bool dragging = false;
 
@@ -24,25 +31,28 @@ string getExtension(string in)
 	}
 	return out;
 }
-
+//TODO: Add playlist. Vector of objects that contain artist, title, and file;
 int main(int argc, char** argv)
 {
+	std::vector<Song> playlist;
 
 	SDL_Init(SDL_INIT_EVERYTHING);
-	SDL_Window* win = SDL_CreateWindow("Roaming Camera", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 1280, 720, SDL_WINDOW_BORDERLESS);
+	SDL_Window* win = SDL_CreateWindow("SpectrogramPlayer", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 1280, 720, SDL_WINDOW_BORDERLESS);
 	if (!win)
 	{
 		SDL_Quit();
 		return 1;
 	}
-	SDL_Renderer* ren = SDL_CreateRenderer(win, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
+	SDL_Renderer* ren = SDL_CreateRenderer(win, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC | SDL_RENDERER_TARGETTEXTURE);
 	if (!ren)
 	{
 		SDL_DestroyWindow(win);
 		SDL_Quit();
 		return 2;
 	}
+	TTF_Init();
 	{ // Destroy objects declared within before cleaning up SDL
+		/*
 		Background bg(win, ren);
 		if (!bg.setImage("image.bmp"))
 		{
@@ -52,11 +62,20 @@ int main(int argc, char** argv)
 			SDL_Quit();
 			return 3;
 		}
+		*/
+		SDL_Rect titleRect;
+		SDL_Rect artistRect;
+
 		SDL_SysWMinfo info;
 		SDL_VERSION(&info.version);
 		SDL_GetWindowWMInfo(win, &info);
-		MusicPlayer music(info.info.win.window);
-		music.loadFile(LR"(トランスルーセント.flac)");
+		MusicPlayer music(info.info.win.window, &playlist, ren);
+		music.enqueue(LR"(トランスルーセント.flac)");
+		music.playPause();
+		SpectrogramBG bg(win, ren, music.getStream());
+
+		int winWidth = 0;
+		SDL_GetWindowSize(win, &winWidth, NULL);
 
 		std::tuple<int, int> downPos;
 		bool quit = false;
@@ -82,6 +101,10 @@ int main(int argc, char** argv)
 				{
 					if (e.key.keysym.sym == SDLK_ESCAPE)
 						quit = true;
+					else if (e.key.keysym.sym == SDLK_RIGHT)
+						music.next();
+					else if (e.key.keysym.sym == SDLK_LEFT)
+						music.prev();
 				}
 				else if (e.type == SDL_DROPFILE)
 				{
@@ -94,13 +117,16 @@ int main(int argc, char** argv)
 
 					if (extension == "flac" || extension == "mp3")
 					{
-						music.loadFile(path);
+						music.enqueue(path);
 					} 
+					SDL_free(e.drop.file);
+					/*
 					else
 					{ 
 						cout << "image" << endl;
-						bg.setImage(e.drop.file);
+						//bg.setImage(e.drop.file);
 					}
+					*/
 					// In the future, we will need to check for file type (image vs music).
 					// We should be able to obtain the supported file types to check from both SDL and bass.
 					// Also consider logic for drag & drop of multiple files in the future; for example:
@@ -152,13 +178,35 @@ int main(int argc, char** argv)
 			bg.update();
 			SDL_RenderClear(ren);
 			bg.draw();
+			/*
 			SDL_SetRenderDrawColor(ren, 0, 0, 0, 55);
 			SDL_SetRenderDrawBlendMode(ren, SDL_BLENDMODE_BLEND);
 			SDL_RenderFillRect(ren, &r);
+			*/
+			int texW, texH;
+			SDL_QueryTexture(music.getCurrSong()->titleTex, NULL, NULL, &texW, &texH);
+			titleRect = { winWidth / 2 - texW / 2, 50, texW, texH };
+			SDL_QueryTexture(music.getCurrSong()->ArtistTex, NULL, NULL, &texW, &texH);
+			artistRect = { winWidth / 2 - texW / 2, 50 + texH + 10, texW, texH };
+			for (int i = 0; i < playlist.size(); ++i)
+			{
+				int songW, songH;
+				SDL_QueryTexture(playlist[i].texture, NULL, NULL, &songW, &songH);
+				SDL_Rect songRect = { winWidth / 2 - songW / 2, 50 + 10 + 2 * texH + 10 + 100 + i * (songH + 10), songW, songH };
+				SDL_SetRenderDrawBlendMode(ren, SDL_BLENDMODE_BLEND);
+				SDL_SetRenderDrawColor(ren, 0, 0, 255, 100);
+				if (&playlist[i] == music.getCurrSong())
+					SDL_RenderFillRect(ren, &songRect);
+				SDL_RenderCopy(ren, playlist[i].texture, NULL, &songRect);
+			}
+			SDL_RenderCopy(ren, music.getCurrSong()->titleTex, NULL, &titleRect);
+			SDL_RenderCopy(ren, music.getCurrSong()->ArtistTex, NULL, &artistRect);
+
 			SDL_RenderPresent(ren);
 		}
 
 	}
+	TTF_Quit();
 	SDL_DestroyRenderer(ren);
 	SDL_DestroyWindow(win);
 	SDL_Quit();
